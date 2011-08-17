@@ -1,5 +1,5 @@
 name: gnutls
-version: 0.1
+version: 0.1.0.1
 stability: experimental
 synopsis: Bindings for GNU TLS
 license: GPL-3
@@ -18,7 +18,7 @@ description:
   will be released at a later date.
 
 library
-  ghc-options: -Wall -fno-warn-unused-do-bind
+  ghc-options: -Wall
 
   build-depends:
       base >=3 && < 5
