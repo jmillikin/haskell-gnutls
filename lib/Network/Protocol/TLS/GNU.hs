@@ -67,9 +67,9 @@ newtype GlobalState = GlobalState (F.ForeignPtr ())
 
 globalInit :: ErrorT Error IO GlobalState
 globalInit = do
-	let init = M.withMVar globalInitMVar $ \_ -> F.gnutls_global_init
+	let init_ = M.withMVar globalInitMVar $ \_ -> F.gnutls_global_init
 	let deinit = M.withMVar globalInitMVar $ \_ -> F.gnutls_global_deinit
-	F.ReturnCode rc <- liftIO $ init
+	F.ReturnCode rc <- liftIO init_
 	when (rc < 0) $ E.throwError $ mapError rc
 	fp <- liftIO $ FC.newForeignPtr F.nullPtr deinit
 	return $ GlobalState fp
@@ -118,7 +118,7 @@ newSession transport end = F.alloca $ \sPtr -> runErrorT $ do
 		pull <- F.wrapTransportFunc (pullImpl transport)
 		F.gnutls_transport_set_push_function session push
 		F.gnutls_transport_set_pull_function session pull
-		F.gnutls_set_default_priority session
+		_ <- F.gnutls_set_default_priority session
 		fp <- FC.newForeignPtr ptr $ do
 			F.gnutls_deinit session
 			F.freeHaskellFunPtr push
@@ -156,7 +156,7 @@ putBytes = putChunks . BL.toChunks where
 
 getBytes :: Integer -> TLS BL.ByteString
 getBytes count = do
-	(bytes, len) <- withSession $ \s ->
+	(mbytes, len) <- withSession $ \s ->
 		F.allocaBytes (fromInteger count) $ \ptr -> do
 		len <- F.gnutls_record_recv s ptr (fromInteger count)
 		bytes <- if len >= 0
@@ -166,7 +166,7 @@ getBytes count = do
 			else return Nothing
 		return (bytes, len)
 	
-	case bytes of
+	case mbytes of
 		Just bytes -> return bytes
 		Nothing   -> E.throwError $ mapError $ fromIntegral len
 
@@ -213,10 +213,10 @@ certificateCredentials :: TLS Credentials
 certificateCredentials = do
 	(rc, ptr) <- liftIO $ F.alloca $ \ptr -> do
 		rc <- F.gnutls_certificate_allocate_credentials ptr
-		ptr <- if F.unRC rc < 0
+		ptr' <- if F.unRC rc < 0
 			then return F.nullPtr
 			else F.peek ptr
-		return (rc, ptr)
+		return (rc, ptr')
 	checkRC rc
 	fp <- liftIO $ F.newForeignPtr F.gnutls_certificate_free_credentials_funptr ptr
 	return $ Credentials (F.CredentialsType 1) fp
