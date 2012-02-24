@@ -42,6 +42,7 @@ module Network.Protocol.TLS.GNU
 import Control.Monad (when, foldM, foldM_)
 import Control.Monad.Trans (MonadIO, liftIO)
 import qualified Control.Monad.Error as E
+import           Control.Monad.Error (ErrorType)
 import qualified Control.Monad.Reader as R
 import qualified Control.Concurrent.MVar as M
 import qualified Data.ByteString as B
@@ -91,7 +92,7 @@ instance MonadIO TLS where
 	liftIO = TLS . liftIO
 
 instance E.MonadError TLS where
-	type E.ErrorType TLS = Error
+	type ErrorType TLS = Error
 	throwError = TLS . E.throwError
 	catchError m h = TLS $ E.catchError (unTLS m) (unTLS . h)
 
