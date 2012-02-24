@@ -23,6 +23,7 @@ module Network.Protocol.TLS.GNU
 	, runClient
 	, getSession
 	, handshake
+	, rehandshake
 	, putBytes
 	, getBytes
 	, checkPending
