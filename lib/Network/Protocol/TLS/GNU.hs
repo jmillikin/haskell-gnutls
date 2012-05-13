@@ -1,19 +1,20 @@
+{-# LANGUAGE TypeFamilies #-}
+
 -- Copyright (C) 2010 John Millikin <jmillikin@gmail.com>
--- 
+--
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- any later version.
--- 
+--
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
--- 
+--
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-{-# LANGUAGE TypeFamilies #-}
 module Network.Protocol.TLS.GNU
 	( TLS
 	, Session
@@ -40,22 +41,24 @@ module Network.Protocol.TLS.GNU
 	, setPriority
 	, CertificateType (..)
 	) where
-import Control.Monad (when, foldM, foldM_)
-import Control.Monad.Trans (MonadIO, liftIO)
+
+import qualified Control.Concurrent.MVar as M
+import           Control.Monad (when, foldM, foldM_)
 import qualified Control.Monad.Error as E
 import           Control.Monad.Error (ErrorType)
 import qualified Control.Monad.Reader as R
-import qualified Control.Concurrent.MVar as M
+import           Control.Monad.Trans (MonadIO, liftIO)
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Unsafe as B
 import qualified Data.ByteString.Lazy as BL
-import qualified System.IO as IO
+import qualified Data.ByteString.Unsafe as B
 import qualified Foreign as F
 import qualified Foreign.C as F
+import           Foreign.Concurrent as FC
+import qualified System.IO as IO
+import           System.IO.Unsafe (unsafePerformIO)
+
+import           Network.Protocol.TLS.GNU.ErrorT
 import qualified Network.Protocol.TLS.GNU.Foreign as F
-import Foreign.Concurrent as FC
-import Network.Protocol.TLS.GNU.ErrorT
-import System.IO.Unsafe (unsafePerformIO)
 
 data Error = Error Integer
 	deriving (Show)
