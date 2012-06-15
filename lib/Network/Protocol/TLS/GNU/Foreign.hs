@@ -104,14 +104,8 @@ newtype Datum = Datum (Ptr Word8, CUInt)
 foreign import ccall safe "gnutls_check_version"
 	gnutls_check_version :: CString -> IO CString
 
-foreign import ccall safe "gnutls_extra_check_version"
-	gnutls_extra_check_version :: CString -> IO CString
-
 foreign import ccall safe "gnutls_global_init"
 	gnutls_global_init :: IO ReturnCode
-
-foreign import ccall safe "gnutls_global_init_extra"
-	gnutls_global_init_extra :: IO ReturnCode
 
 foreign import ccall safe "gnutls_global_deinit"
 	gnutls_global_deinit :: IO ()

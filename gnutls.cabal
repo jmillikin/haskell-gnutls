@@ -1,5 +1,5 @@
 name: gnutls
-version: 0.1.2
+version: 0.1.3
 license: GPL-3
 license-file: license.txt
 author: John Millikin <jmillikin@gmail.com>
@@ -26,7 +26,7 @@ source-repository head
 source-repository this
   type: bazaar
   location: https://john-millikin.com/branches/haskell-gnutls/0.1/
-  tag: haskell-gnutls_0.1.2
+  tag: haskell-gnutls_0.1.3
 
 library
   hs-source-dirs: lib
@@ -38,8 +38,8 @@ library
     , transformers >= 0.2
     , monads-tf >= 0.1 && < 0.2
 
-  extra-libraries: gnutls, gnutls-extra
-  pkgconfig-depends: gnutls, gnutls-extra
+  extra-libraries: gnutls
+  pkgconfig-depends: gnutls
 
   exposed-modules:
     Network.Protocol.TLS.GNU
