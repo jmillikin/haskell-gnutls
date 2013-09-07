@@ -20,12 +20,12 @@ description:
   will be released at a later date.
 
 source-repository head
-  type: bazaar
-  location: https://john-millikin.com/branches/haskell-gnutls/0.1/
+  type: git
+  location: https://john-millikin.com/code/haskell-gnutls/
 
 source-repository this
-  type: bazaar
-  location: https://john-millikin.com/branches/haskell-gnutls/0.1/
+  type: git
+  location: https://john-millikin.com/code/haskell-gnutls/
   tag: haskell-gnutls_0.1.4
 
 library
