@@ -68,20 +68,17 @@ globalInitMVar :: M.MVar ()
 {-# NOINLINE globalInitMVar #-}
 globalInitMVar = unsafePerformIO $ M.newMVar ()
 
-newtype GlobalState = GlobalState (F.ForeignPtr ())
-
-globalInit :: ErrorT Error IO GlobalState
+globalInit :: ErrorT Error IO ()
 globalInit = do
 	let init_ = M.withMVar globalInitMVar $ \_ -> F.gnutls_global_init
-	let deinit = M.withMVar globalInitMVar $ \_ -> F.gnutls_global_deinit
 	F.ReturnCode rc <- liftIO init_
 	when (rc < 0) $ E.throwError $ mapError rc
-	fp <- liftIO $ FC.newForeignPtr F.nullPtr deinit
-	return $ GlobalState fp
+
+globalDeinit :: IO ()
+globalDeinit = M.withMVar globalInitMVar $ \_ -> F.gnutls_global_deinit
 
 data Session = Session
 	{ sessionPtr :: F.ForeignPtr F.Session
-	, sessionGlobalState :: GlobalState
 	
 	-- TLS credentials are not copied into the gnutls session struct,
 	-- so pointers to them must be kept alive until the credentials
@@ -122,7 +119,7 @@ runClient transport tls = do
 
 newSession :: Transport -> F.ConnectionEnd -> IO (Either Error Session)
 newSession transport end = F.alloca $ \sPtr -> runErrorT $ do
-	global <- globalInit
+	globalInit
 	F.ReturnCode rc <- liftIO $ F.gnutls_init sPtr end
 	when (rc < 0) $ E.throwError $ mapError rc
 	liftIO $ do
@@ -136,9 +133,10 @@ newSession transport end = F.alloca $ \sPtr -> runErrorT $ do
 		creds <- newIORef []
 		fp <- FC.newForeignPtr ptr $ do
 			F.gnutls_deinit session
+			globalDeinit
 			F.freeHaskellFunPtr push
 			F.freeHaskellFunPtr pull
-		return (Session fp global creds)
+		return (Session fp creds)
 
 getSession :: TLS Session
 getSession = TLS R.ask
