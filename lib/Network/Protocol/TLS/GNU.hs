@@ -42,8 +42,9 @@ module Network.Protocol.TLS.GNU
 	, CertificateType (..)
 	) where
 
+import           Control.Applicative (Applicative, pure)
 import qualified Control.Concurrent.MVar as M
-import           Control.Monad (when, foldM, foldM_)
+import           Control.Monad (ap, when, foldM, foldM_)
 import qualified Control.Monad.Error as E
 import           Control.Monad.Error (ErrorType)
 import qualified Control.Monad.Reader as R
@@ -94,6 +95,10 @@ newtype TLS a = TLS { unTLS :: ErrorT Error (R.ReaderT Session IO) a }
 
 instance Functor TLS where
 	fmap f = TLS . fmap f . unTLS
+
+instance Applicative TLS where
+	pure = TLS . return
+	(<*>) = ap
 
 instance Monad TLS where
 	return = TLS . return
