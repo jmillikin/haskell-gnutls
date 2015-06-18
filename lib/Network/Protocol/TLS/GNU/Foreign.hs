@@ -195,9 +195,6 @@ foreign import ccall safe "gnutls_certificate_type_get"
 foreign import ccall safe "gnutls_certificate_type_list"
 	gnutls_certificate_type_list :: IO (Ptr CertificateType)
 
-foreign import ccall safe "gnutls_certificate_type_set_priority"
-	gnutls_certificate_type_set_priority :: Session -> Ptr CInt -> IO ReturnCode
-
 -- }}}
 
 -- Credentials {{{

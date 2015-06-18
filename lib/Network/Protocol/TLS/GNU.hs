@@ -36,10 +36,6 @@ module Network.Protocol.TLS.GNU
 	, Credentials
 	, setCredentials
 	, certificateCredentials
-	
-	, Prioritised
-	, setPriority
-	, CertificateType (..)
 	) where
 
 import           Control.Applicative (Applicative, pure, (<*>))
@@ -242,25 +238,6 @@ certificateCredentials = do
 	checkRC rc
 	fp <- liftIO $ F.newForeignPtr F.gnutls_certificate_free_credentials_funptr ptr
 	return $ Credentials (F.CredentialsType 1) fp
-
-class Prioritised a where
-	priorityInt :: a -> F.CInt
-	priorityProc :: a -> F.Session -> F.Ptr F.CInt -> IO F.ReturnCode
-
-data CertificateType = X509 | OpenPGP
-	deriving (Show)
-
-instance Prioritised CertificateType where
-	priorityProc = const F.gnutls_certificate_type_set_priority
-	priorityInt x = case x of
-		X509 -> 1
-		OpenPGP -> 2
-
-setPriority :: Prioritised a => [a] -> TLS ()
-setPriority xs = do
-	let fake = head $ [undefined] ++ xs
-	rc <- withSession $ F.withArray0 0 (map priorityInt xs) . priorityProc fake
-	checkRC rc
 
 withSession :: (F.Session -> IO a) -> TLS a
 withSession io = do
